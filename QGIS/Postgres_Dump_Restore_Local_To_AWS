@@ -1,0 +1,104 @@
+
+## docker Install ##
+curl -s https://get.docker.com/ | sudo sh
+
+------------------------------------------------------------------------------------------
+
+## docker compose Install ##
+sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+==========================================================================================
+
+## docker-compose.yml
+  
+
+sudo docker-compose up -d
+
+
+==========================================================================================
+
+ docker exec -it [container ID] bash
+
+ psql -U [username] -W -d [database name] -h 127.0.0.1
+
+ show schema = \dn
+
+ show tables = select * from pg_tables;
+               select * from pg_tables order by schemaname;
+               select table_schema, table_name from information_schema.tables where table_schema = 'cron' order by table_name;
+
+
+pg_dump -h 127.0.0.1 -U docker -W -d gis  --if-exists -c > test1.sql (default)
+
+
+
+# Work(Fianl)
+==========================================================================================
+
+1. table dump
+  pg_dump -h 127.0.0.1 -U docker -W -d gis -t cron._10km --if-exists -c > dump_10km.sql
+  pg_dump -h 127.0.0.1 -U docker -W -d gis -t cron._5km --if-exists -c > dump_5km.sql
+  pg_dump -h 127.0.0.1 -U docker -W -d gis -t cron._1km --if-exists -c > dump_1km.sql
+  pg_dump -h 127.0.0.1 -U docker -W -d gis -t cron._500m --if-exists -c > dump_500m.sql
+  pg_dump -h 127.0.0.1 -U docker -W -d gis -t cron._100m --if-exists -c > dump_100m.sql
+
+2. copy dump file to out(window, linux)
+
+  docker cp 342218aaa14f:/scripts/dump_10km.sql test
+  docker cp 342218aaa14f:/scripts/dump_5km.sql test
+  docker cp 342218aaa14f:/scripts/dump_1km.sql test
+  docker cp 342218aaa14f:/scripts/dump_500m.sql test
+  docker cp 342218aaa14f:/scripts/dump_100m.sql test
+
+            [docker id]:[docker pwd]  [window folder]
+
+3. restore dump data
+  psql -h 127.0.0.1 -U docker -W -d gis -p 25434 < dump_10km.sql
+  psql -h 127.0.0.1 -U docker -W -d gis -p 25434 < dump_5km.sql
+  psql -h 127.0.0.1 -U docker -W -d gis -p 25434 < dump_1km.sql
+  psql -h 127.0.0.1 -U docker -W -d gis -p 25434 < dump_500m.sql
+  psql -h 127.0.0.1 -U docker -W -d gis -p 25434 < dump_100m.sql
+  
+
+4. varchar to integer(begin colume)
+  ALTER TABLE cron."_10km" ALTER COLUMN "begin" TYPE integer USING ("begin"::INTEGER);
+  ALTER TABLE cron."_1km" ALTER COLUMN "begin" TYPE integer USING ("begin"::INTEGER);
+  ALTER TABLE cron."_5km" ALTER COLUMN "begin" TYPE integer USING ("begin"::INTEGER);
+  ALTER TABLE cron."_100m" ALTER COLUMN "begin" TYPE integer USING ("begin"::INTEGER);
+  ALTER TABLE cron."_500m" ALTER COLUMN "begin" TYPE integer USING ("begin"::INTEGER);
+
+==========================================================================================
+
+
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard --schema-only -t public.event --if-exists -c  > public.event.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo --if-exists -c > geo_layer.event_cur_repo.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_10k --if-exists -c > geo_layer.event_cur_repo_10k.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_debug --if-exists -c > geo_layer.event_cur_repo_debug.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo2 --if-exists -c > geo_layer.event_cur_repo2.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_1k --if-exists -c > geo_layer.event_cur_repo_1k.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_1k_bak --if-exists -c > geo_layer.event_cur_repo_1k_bak.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo --if-exists -c > geo_layer.event_repo.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_1k_bak22 --if-exists -c > geo_layer.event_cur_repo_1k_bak22.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_500m --if-exists -c > geo_layer.event_cur_repo_500m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_100m --if-exists -c > geo_layer.event_cur_repo_100m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_copy_history --if-exists -c > geo_layer.event_copy_history.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_new_10km --if-exists -c > geo_layer.event_cur_repo_new_10km.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_new_100m --if-exists -c > geo_layer.event_cur_repo_new_100m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_new_5km --if-exists -c > geo_layer.event_cur_repo_new_5km.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_new_1km --if-exists -c > geo_layer.event_cur_repo_new_1km.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_cur_repo_new_500m --if-exists -c > geo_layer.event_cur_repo_new_500m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.timestamp_demo --if-exists -c > geo_layer.timestamp_demo.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_test11 --if-exists -c > geo_layer.event_test11.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_bak --if-exists -c > geo_layer.event_repo_bak.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_testm --if-exists -c > geo_layer.event_repo_cur_testm.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_0m --if-exists -c > geo_layer.event_repo_cur_0m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_100m --if-exists -c > geo_layer.event_repo_cur_100m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_500m --if-exists -c > geo_layer.event_repo_cur_500m.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_1km --if-exists -c > geo_layer.event_repo_cur_1km.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_5km --if-exists -c > geo_layer.event_repo_cur_5km.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.event_repo_cur_10km --if-exists -c > geo_layer.event_repo_cur_10km.sql
+PGPASSWORD="postgres" pg_dump -h 127.0.0.1 -U postgres -d thingsboard -t geo_layer.test --if-exists -c > geo_layer.test.sql
+
+

@@ -1,0 +1,48 @@
+#docker-compose version
+version: "3"
+
+volumes:
+  geoserver_data:
+  geodb-data:
+ 
+services:
+  db: # service name
+    image: kartoza/postgis:latest # 서비스 컨테이너 생성할 때 쓰일 이미지 이름(이름 포멧은 docker run과 같음)
+    networks:
+      - test_network
+    volumes:
+      - geodb-data:/var/lib/postgresql
+    ports: # 서비스 컨테이너를 개방할 포트를 설정한다.
+      - "25434:5432"
+    environment: # docker run 의 --env, -e 옵션과 동일함, 서비스 컨테이너 네부에서 사용할 황경 변수를 지정하며 딕셔너리나 배열 형태
+      - POSTGRES_DB=gis,gwc
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ALLOW_IP_RANGE=0.0.0.0/0
+    restart: always
+
+  geoserver:
+    image: kartoza/geoserver:latest
+    networks:
+      - test_network
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+    ports:
+      - "8888:8080"
+    restart: always
+    environment:
+      - POSTGRES_DB=gis,gwc
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
+      - ALLOW_IP_RANGE=0.0.0.0/0
+    depends_on:
+      - db
+    healthcheck:
+      test: curl --fail -s http://localhost:8080/ || exit 1
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  test_network:
+    driver: bridge
